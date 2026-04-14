@@ -1,4 +1,5 @@
 import sqlite3
+<<<<<<< HEAD
 conn=sqlite3.connect('finance.db')
 c=conn.cursor()
 
@@ -16,6 +17,26 @@ CREATE TABLE IF NOT EXISTS finances(
 
 """ )
    
+=======
+
+
+def main():
+    conn=sqlite3.connect(':memory:')
+    c=conn.cursor()
+    c.execute("""
+         CREATE TABLE IF NOT EXISTS customers(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          Income INTEGER,
+          Expence INTEGER,
+          Amount INTEGER,
+          Category TEXT,
+          Date TEXT,
+        Any Note TEXT
+          
+        
+          )
+          """)
+>>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
     print("Welcome to Finance CLI")
     Option_number=0
     print("1: Add transaction")
@@ -23,6 +44,7 @@ CREATE TABLE IF NOT EXISTS finances(
     print("3: List Transactions")
     print("4: Exit")
     while(Option_number!=4):
+<<<<<<< HEAD
         while True:
             try:
                 Option_number=int(input("Enter a choice by typing 1 , 2 , 3 , 4 :"))
@@ -32,6 +54,11 @@ CREATE TABLE IF NOT EXISTS finances(
                     print("Enter a number between 1-4.")
             except ValueError:
                 print("Enter an integer.")
+=======
+
+        Option_number=int(input("Enter a choice by typing 1 , 2 , 3 , 4 :"))
+        
+>>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
         match Option_number:
             case 1:
                 add_transaction()
@@ -39,6 +66,7 @@ CREATE TABLE IF NOT EXISTS finances(
                 calculate_balance()
             case 3:
                 list_transactions()
+<<<<<<< HEAD
 
 def add_transaction():
     while True:
@@ -72,6 +100,15 @@ def add_transaction():
           )
     conn.commit()
 
+=======
+            
+        
+        
+
+
+def add_transaction():
+    
+>>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
     
 
 
