@@ -1,152 +1,185 @@
 import sqlite3
-<<<<<<< HEAD
-conn=sqlite3.connect('finance.db')
+from Skeletal import Catalogue, Movie, Series
+conn=sqlite3.connect(":memory:")#for tempory testing while coding database
 c=conn.cursor()
-
-def main():
-    
-    c.execute("""
-
-CREATE TABLE IF NOT EXISTS finances(
+c.execute("""
+    CREATE TABLE IF NOT EXISTS contents(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              Transaction_type TEXT,
-              Amount INTEGER,
-              Category TEXT,
-              Date TEXT,
-              Note TEXT)
-
-""" )
-   
-=======
-
-
+              name TEXT,
+              year INTEGER,
+              language TEXT,
+              status TEXT,
+              genre TEXT,
+              run_time INTEGER,
+              seasons INTEGER,
+              episodes INTEGER,
+              content_type TEXT,
+              director TEXT,
+              protagonist TEXT
+              )
+""")
+conn.commit()
+catalogue = Catalogue("My Personal Movie Collection")
 def main():
-    conn=sqlite3.connect(':memory:')
-    c=conn.cursor()
-    c.execute("""
-         CREATE TABLE IF NOT EXISTS customers(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          Income INTEGER,
-          Expence INTEGER,
-          Amount INTEGER,
-          Category TEXT,
-          Date TEXT,
-        Any Note TEXT
-          
-        
-          )
-          """)
->>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
-    print("Welcome to Finance CLI")
-    Option_number=0
-    print("1: Add transaction")
-    print("2: Calculate Balance")
-    print("3: List Transactions")
-    print("4: Exit")
-    while(Option_number!=4):
-<<<<<<< HEAD
+    Option=0
+    while Option!=7:
+        print("Your personal content catalogue")
+        print("1. Add Movie")
+        print("2. Add Series")
+        print("3. Display the list of movies.")
+        print("4. Display the list of Series.")
+        print("5. Display the Entire Collection.")
+        print("6. Serch content by name.")
+        print("7. Exit")
         while True:
             try:
-                Option_number=int(input("Enter a choice by typing 1 , 2 , 3 , 4 :"))
-                if Option_number in range(1,5):
+                Option=int(input("Enter a choice by typing the option number: ").strip())
+                if Option>0 and Option<=7:
                     break
                 else:
-                    print("Enter a number between 1-4.")
+                    raise ValueError
             except ValueError:
-                print("Enter an integer.")
-=======
-
-        Option_number=int(input("Enter a choice by typing 1 , 2 , 3 , 4 :"))
-        
->>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
-        match Option_number:
-            case 1:
-                add_transaction()
-            case 2:
-                calculate_balance()
-            case 3:
-                list_transactions()
-<<<<<<< HEAD
-
-def add_transaction():
-    while True:
-        try:
-            Transaction_type=input("Type of transaction.(Income or Expense): ").lower()
-            if Transaction_type!="income" and Transaction_type!="expense":
-                print("Enter either income or expense.")
-            else:
-                break
-        except ValueError:
-            print("Enter a string , either income or expense.")
-    while True: 
-        try:
-            Amount=int(input("Enter the Amount: "))
-            break
-        except ValueError:
-            print("Enter an integer amount.")
-    Date=input("Enter a date (dd/mm/yyyy): ")
-    Note=input("Enter a note: ")
-    Category=input("What was the category: ")
-    
-   
-        
-
-    finances=[(Transaction_type ,Amount,Category,Date, Note)]
-    c.executemany("""
-    INSERT INTO finances (Transaction_type ,Amount , Category , Date , Note)
-           
-           VALUES (?,?,?,?,?)
-           """,finances
-          )
-    conn.commit()
-
-=======
+                print("Enter an Integer value between 1-7.")
             
         
-        
+
+        match Option:
+            case 1:
+                add_content("movie")
+            case 2:
+                add_content("series")
+            case 3:
+                display_movies()
+            case 4:
+                display_series()
+            case 5:
+                display_content()
+            case 6:
+                search_content()
+            case 7:
+                return 0
 
 
-def add_transaction():
-    
->>>>>>> b42c4a5 (New projet direction , now it's a movie tracking system)
-    
+def add_content(content_type):
+    name = input("Enter name: ").strip()
+    while True:
+        try:
+            year = int(input("Enter release year: ").strip())
+            break
+        except:
+            print("Enter year in numbers like xxxx.")
+    language = input("Enter language: ").strip()
+    status = input("Enter status (completed/watching/plan_to_watch): ").strip()
+    genre = input("Enter genre: ").strip()
+    director = input("Enter director: ").strip()
+    protagonist = input("Enter protagonist: ").strip()
+
+    # Createing object accouding to content_type feild in skeletal file
+    if content_type == "movie":
+        while True:
+            try:
+                run_time = int(input("Enter run time: ").strip())
+                break
+            except ValueError:
+                print("Enter a valid number.")
+        content = Movie(name, year, language, status, genre, run_time, director, protagonist)
+        catalogue.add_content(content)
+        seasons = None
+        episodes = None
 
 
-def calculate_balance():
- 
+    else:  # series
+        seasons = int(input("Enter number of seasons: ").strip())
+        episodes = int(input("Enter total episodes: ").strip())
+        content = Series(name, year, language, status, genre, seasons, episodes, director, protagonist)
+        catalogue.add_content(content)
+        run_time = None
+
+    # Insert into database
     c.execute("""
-              SELECT SUM(Amount) FROM finances
-              WHERE Transaction_type='income'
+        INSERT INTO contents(
+            name, year, language, status, genre,
+            run_time, seasons, episodes,
+            content_type, director, protagonist
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        content.name,
+        content.year,
+        content.language,
+        content.status,
+        content.genre,
+        run_time,
+        seasons,
+        episodes,
+        content.content_type,
+        content.director,
+        content.protagonist
+    ))
+    conn.commit()
+    print(f"{content_type.capitalize()} '{content.name}' added successfully!")
 
-                """)
-    income=c.fetchone()
-    income_total = income[0] if income[0] is not None else 0
-################################################################
+def search_content():
+    name = input("Enter the name of the content to search: ").strip().lower()
+    c.execute("SELECT * FROM contents WHERE LOWER(name) = LOWER(?)", (name,))
+    result = c.fetchone()
+    if result:
+        # Unpacking the row for readability
+        (id, name, year, language, status, genre, run_time,
+         seasons, episodes, content_type, director, protagonist) = result
 
-    c.execute("""SELECT SUM(Amount) FROM finances
-                WHERE Transaction_type='expense'
-""")
-    expense=c.fetchone()
-    expense_total = expense[0] if expense[0] is not None else 0
-      
+        if content_type == "movie":
+            print(f"Movie found: {name} ({year}) - {genre}, {language}, Runtime: {run_time} min, Status: {status}")
+        elif content_type == "series":
+            print(f"Series found: {name} ({year}) - {genre}, {language}, Seasons: {seasons}, Episodes: {episodes}, Status: {status}")
+        else:
+            print(f"{content_type.capitalize()} found: {name} ({year}) - {genre}, {language}, Status: {status}")
+    else:
+        print("Content not found.")
 
-    balance=income_total-expense_total
-    print("\nYour Balance: ₹", balance)
+
+def display_movies():
+        print("Here are your movies:")
+        c.execute("SELECT name, year, genre, language, run_time FROM contents WHERE content_type='movie'")
+        movies = c.fetchall()
+        for m in movies:
+            print(f"{m[0]} ({m[1]}) - {m[2]}, {m[3]}, Runtime: {m[4]} min")
+
+
+def display_series():
+    print("Here are your series:")
+    c.execute("SELECT name, year, genre, language, seasons, episodes FROM contents WHERE content_type='series'")
+    series = c.fetchall()
+    for s in series:
+        print(f"{s[0]} ({s[1]}) - {s[2]}, {s[3]}, Seasons: {s[4]}, Episodes: {s[5]}")
+
+
+def display_content():
+    print("\nHere is your entire content library:")
+    print("=" * 70)
+    c.execute("SELECT name, year, genre, language, content_type, status, run_time, seasons, episodes FROM contents")
+    rows = c.fetchall()
+    for row in rows:
+        name, year, genre, language, content_type, status, run_time, seasons, episodes = row
+        if content_type == "movie":
+            print(f"Movie: {name} ({year}) - {genre}, {language}, Runtime: {run_time} min, Status: {status}")
+        elif content_type == "series":
+            print(f"Series: {name} ({year}) - {genre}, {language}, Seasons: {seasons}, Episodes: {episodes}, Status: {status}")
+        else:
+            print(f"{content_type.capitalize()}: {name} ({year}) - {genre}, {language}, Status: {status}")
+        print("-" * 60)
+
+if __name__=="__main__":
+    main()
     
-    
-
-def list_transactions():
-    pass
 
 
-if __name__ == "__main__":
-    main()  
-                  
-                  
-                     
 
 
-    
+
+
+
+
     
 
 
