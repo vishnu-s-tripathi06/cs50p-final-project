@@ -16,7 +16,7 @@ project/
 ├── requirements.txt # Project dependencies
 └── README.md # Documentation
 ## ⚙️ Features of This project
-All the funtions of this project are stored in project.py folder which also has all the sqlite3 quaries .The Movie Catalogue provides the following functionalities :
+All the funtions of this project are stored in `project.py` folder which also has all the sqlite3 quaries .The Movie Catalogue provides the following functionalities :
 
 ### 🎥 Content Management
 - Add movies and TV series with detailed metadata
@@ -55,7 +55,7 @@ All these functionalities are basic but I aim to expand them in the web version.
 
 ## 🧠 Object-Oriented Design
 
-The project follows a structured Object oriented programming approach by having a separate skeletal.py file which contains all my classes namely Catalogue, Content , Movie and Series. 
+The project follows a structured Object oriented programming approach by having a separate `skeletal.py` file which contains all my classes namely Catalogue, Content , Movie and Series. 
 
 ### Base Class: Content
 The `Content` class stores shared attributes such as name, year, genre, language, and status. It acts as the foundation for all media types.

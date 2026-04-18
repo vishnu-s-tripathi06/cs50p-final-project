@@ -18,7 +18,7 @@ c.execute("""
               protagonist TEXT
               )
 """)
-conn.commit()
+
 catalogue = Catalogue("My Personal Movie Collection")
 def main():
     Option=0
@@ -58,7 +58,6 @@ def main():
                 search_content()
             case 7:
                 return 0
-conn.commit()
 
 def add_content(content_type):
     name = input("Enter name: ").strip()
@@ -74,7 +73,7 @@ def add_content(content_type):
     director = input("Enter director: ").strip()
     protagonist = input("Enter protagonist: ").strip()
 
-    # Createing object accouding to content_type feild in skeletal file
+    # Createing object according to content_type feild in skeletal file
     if content_type == "movie":
         while True:
             try:
@@ -182,7 +181,8 @@ def display_content():
 
 if __name__=="__main__":
     main()
-    
+    conn.commit()
+    conn.close()
 
 
 
