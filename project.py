@@ -1,6 +1,6 @@
 import sqlite3
 from Skeletal import Catalogue, Movie, Series
-conn=sqlite3.connect(":memory:")#for tempory testing while coding database
+conn=sqlite3.connect("Catalogue.DB")#for tempory testing while coding database
 c=conn.cursor()
 c.execute("""
     CREATE TABLE IF NOT EXISTS contents(
@@ -58,7 +58,7 @@ def main():
                 search_content()
             case 7:
                 return 0
-
+conn.commit()
 
 def add_content(content_type):
     name = input("Enter name: ").strip()
@@ -89,8 +89,19 @@ def add_content(content_type):
 
 
     else:  # series
-        seasons = int(input("Enter number of seasons: ").strip())
-        episodes = int(input("Enter total episodes: ").strip())
+        while True:
+            try:
+                seasons = int(input("Enter number of seasons: ").strip())
+                break
+            except ValueError:
+                print("Enter a valid number.")
+
+        while True:
+            try:
+                episodes = int(input("Enter total episodes: ").strip())
+                break
+            except:
+                print("Enter a Valid number.")
         content = Series(name, year, language, status, genre, seasons, episodes, director, protagonist)
         catalogue.add_content(content)
         run_time = None

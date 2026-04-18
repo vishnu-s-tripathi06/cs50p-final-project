@@ -1,14 +1,12 @@
 import sqlite3
-import project  # your main file name
+import pytest
+import project 
 
-
-# -----------------------------
-# helper: create fresh DB
-# -----------------------------
-def setup_db():
+@pytest.fixture
+def db_connection():
+    # Create a fresh in-memory DB for each test
     conn = sqlite3.connect(":memory:")
     c = conn.cursor()
-
     c.execute("""
         CREATE TABLE contents(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,72 +23,52 @@ def setup_db():
             protagonist TEXT
         )
     """)
-
     conn.commit()
-    return conn, c
-
-
-# -----------------------------
-# TEST 1: insert movie (logic only)
-# -----------------------------
-def test_movie_insert():
-    conn, c = setup_db()
-
+    
     project.conn = conn
     project.c = c
+    yield conn
+    conn.close()
 
-    c.execute("""
-        INSERT INTO contents
-        (name, year, language, status, genre,
-         run_time, seasons, episodes, content_type, director, protagonist)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        "Inception", 2010, "English", "completed", "Sci-Fi",
-        148, None, None, "movie", "Nolan", "Leonardo"
-    ))
+def test_display_movies(db_connection, capfd):
+    db_connection.execute("""
+        INSERT INTO contents(name, year, genre, language, run_time, content_type, status, director, protagonist)
+        VALUES ('Inception', 2010, 'Sci-Fi', 'English', 148, 'movie', 'completed', 'Nolan', 'DiCaprio')
+    """)
 
-    conn.commit()
+    db_connection.commit()
 
-    c.execute("SELECT name FROM contents WHERE name = 'Inception'")
-    result = c.fetchone()
+    project.display_movies()
+    captured = capfd.readouterr()
+    assert "Inception (2010)" in captured.out
+    assert "Sci-Fi" in captured.out
 
-    assert result[0] == "Inception"
+def test_display_series(db_connection, capfd):
+    db_connection.execute("""
+        INSERT INTO contents(name, year, genre, language, seasons, episodes, content_type, status, director, protagonist)
+        VALUES ('Dark', 2017, 'Sci-Fi', 'German', 3, 26, 'series', 'completed', 'Baran bo Odar', 'Louis Hofmann')
+    """)
+    db_connection.commit()
 
+    project.display_series()
+    captured = capfd.readouterr()
+    assert "Dark (2017)" in captured.out
+    assert "Seasons: 3" in captured.out
 
-# -----------------------------
-# TEST 2: insert series
-# -----------------------------
-def test_series_insert():
-    conn, c = setup_db()
+def test_search_content(db_connection, capfd):
+    db_connection.execute("""
+        INSERT INTO contents(name, year, genre, language, run_time, content_type, status, director, protagonist)
+        VALUES ('Interstellar', 2014, 'Sci-Fi', 'English', 169, 'movie', 'completed', 'Nolan', 'McConaughey')
+    """)
+    db_connection.commit()
 
-    project.conn = conn
-    project.c = c
+   #testing search 
+    def fake_input(prompt=""):
+        return "Interstellar"
+    project.input = fake_input
 
-    c.execute("""
-        INSERT INTO contents
-        (name, year, language, status, genre,
-         run_time, seasons, episodes, content_type, director, protagonist)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        "Dark", 2017, "German", "completed", "Thriller",
-        None, 3, 26, "series", "Baran", "Jonas"
-    ))
+    project.search_content()
+    captured = capfd.readouterr()
+    assert "Movie found: Interstellar (2014)" in captured.out
+    assert "Runtime: 169 min" in captured.out
 
-    conn.commit()
-
-    c.execute("SELECT content_type FROM contents WHERE name = 'Dark'")
-    result = c.fetchone()
-
-    assert result[0] == "series"
-
-
-# -----------------------------
-# TEST 3: check empty DB
-# -----------------------------
-def test_empty_db():
-    conn, c = setup_db()
-
-    c.execute("SELECT * FROM contents")
-    result = c.fetchall()
-
-    assert result == []
